@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod/v4";
 import { useActionState } from "react";
+import Link from "next/link";
 
 const Login = () => {
   const [lastResult, action, isPending] = useActionState(login, undefined);
@@ -62,6 +63,12 @@ const Login = () => {
           {isPending ? "Logging in..." : "Log in"}
         </Button>
       </form>
+      <div>
+        <p className="mt-4">{`Don't have an account? `}</p>
+        <Link href="/signup" className="text-blue-500 hover:underline">
+          Sign up
+        </Link>
+      </div>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+import { relations, sql, SQL } from "drizzle-orm";
 import {
   integer,
   numeric,
@@ -26,13 +26,18 @@ export const users = pgTable("users", {
 
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
-  customerId: integer("customer_id")
-    .notNull()
-    .references(() => users.id, {
-      onDelete: "restrict",
-    }),
+  customer: text("customer").notNull(),
   dueDate: timestamp("due_date").notNull(),
   status: paymentStatusEnum("status").notNull(),
+  totalAmount: numeric("total_amount", { precision: 10, scale: 2 })
+    .notNull()
+    .default("0"),
+  amountPaid: numeric("amount_paid", { precision: 10, scale: 2 })
+    .notNull()
+    .default("0"),
+  balanceDue: numeric("balance_due", { precision: 10, scale: 2 })
+    .notNull()
+    .default("0"),
 });
 
 export const lineItems = pgTable("line_items", {
@@ -40,6 +45,9 @@ export const lineItems = pgTable("line_items", {
   description: text("description").notNull(),
   quantity: integer("quantity").notNull(),
   unitPrice: numeric("unit_price", { precision: 10, scale: 2 }).notNull(),
+  subtotal: numeric("subtotal", { precision: 10, scale: 2 }).generatedAlwaysAs(
+    (): SQL => sql`quantity * unit_price`,
+  ),
   orderId: integer("order_id")
     .notNull()
     .references(() => orders.id),
@@ -59,11 +67,7 @@ export const userRelations = relations(users, ({ many }) => ({
   orders: many(orders),
 }));
 
-export const orderRelations = relations(orders, ({ one, many }) => ({
-  customer: one(users, {
-    fields: [orders.customerId],
-    references: [users.id],
-  }),
+export const orderRelations = relations(orders, ({ many }) => ({
   lineItems: many(lineItems),
   payments: many(payments),
 }));

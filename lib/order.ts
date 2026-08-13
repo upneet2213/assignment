@@ -1,7 +1,7 @@
 "server-only";
-import { orders, lineItems, payments, users } from "@/db/schema";
+import { orders, lineItems, users } from "@/db/schema";
 import { db } from "./db";
-import { eq, sql, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 
 type LineItemInput = {
   description: string;
@@ -14,7 +14,7 @@ type GetOrdersOptions = {
 };
 
 export const createOrder = async (
-  customerId: number,
+  customer: string,
   dueDate: Date,
   items: LineItemInput[],
 ) => {
@@ -22,7 +22,7 @@ export const createOrder = async (
     const [order] = await tx
       .insert(orders)
       .values({
-        customerId,
+        customer,
         dueDate,
         status: "pending",
       })
@@ -45,30 +45,10 @@ export const getOrderWithDetails = async (orderId: number) => {
     with: {
       lineItems: true,
       payments: true,
-      customer: {
-        columns: { id: true, name: true, email: true }, // omit password
-      },
     },
   });
 
-  if (!order) return null;
-
-  const totalAmount = order.lineItems.reduce(
-    (sum, item) => sum + Number(item.unitPrice) * item.quantity,
-    0,
-  );
-
-  const totalPaid = order.payments.reduce(
-    (sum, payment) => sum + Number(payment.amount),
-    0,
-  );
-
-  return {
-    ...order,
-    totalAmount,
-    totalPaid,
-    balanceDue: totalAmount - totalPaid,
-  };
+  return order ?? null;
 };
 
 export const getOrdersList = async ({
@@ -77,44 +57,18 @@ export const getOrdersList = async ({
 }: GetOrdersOptions = {}) => {
   const offset = (page - 1) * pageSize;
 
-  const lineItemTotals = db
-    .select({
-      orderId: lineItems.orderId,
-      totalAmount:
-        sql<string>`COALESCE(SUM(${lineItems.quantity} * ${lineItems.unitPrice}), 0)`.as(
-          "total_amount",
-        ),
-    })
-    .from(lineItems)
-    .groupBy(lineItems.orderId)
-    .as("line_item_totals");
-
-  const paymentTotals = db
-    .select({
-      orderId: payments.orderId,
-      totalPaid: sql<string>`COALESCE(SUM(${payments.amount}), 0)`.as(
-        "total_paid",
-      ),
-    })
-    .from(payments)
-    .groupBy(payments.orderId)
-    .as("payment_totals");
-
   const results = await db
     .select({
       id: orders.id,
       dueDate: orders.dueDate,
       status: orders.status,
-      customerName: users.name,
-      customerEmail: users.email,
-      totalAmount: sql<string>`COALESCE(${lineItemTotals.totalAmount}, 0)`,
-      totalPaid: sql<string>`COALESCE(${paymentTotals.totalPaid}, 0)`,
-      balanceDue: sql<string>`COALESCE(${lineItemTotals.totalAmount}, 0) - COALESCE(${paymentTotals.totalPaid}, 0)`,
+      customer: orders.customer,
+      totalAmount: orders.totalAmount,
+      amountPaid: orders.amountPaid,
+      balanceDue: orders.balanceDue,
     })
     .from(orders)
-    .leftJoin(users, eq(users.id, orders.customerId))
-    .leftJoin(lineItemTotals, eq(lineItemTotals.orderId, orders.id))
-    .leftJoin(paymentTotals, eq(paymentTotals.orderId, orders.id))
+    // .where(eq(users.id, ))
     .orderBy(desc(orders.dueDate))
     .limit(pageSize)
     .offset(offset);
