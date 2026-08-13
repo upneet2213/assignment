@@ -1,7 +1,8 @@
 "server-only";
-import { orders, lineItems, users } from "@/db/schema";
+import { orders, lineItems } from "@/db/schema";
 import { db } from "./db";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc, sql, and } from "drizzle-orm";
+import { getCurrentUserId } from "./dal";
 
 type LineItemInput = {
   description: string;
@@ -19,10 +20,15 @@ export const createOrder = async (
   items: LineItemInput[],
 ) => {
   return await db.transaction(async (tx) => {
+    const currentUserId = await getCurrentUserId();
+    if (!currentUserId) {
+      throw new Error("You must be logged in to create an order.");
+    }
     const [order] = await tx
       .insert(orders)
       .values({
         customer,
+        userId: Number(currentUserId),
         dueDate,
         status: "pending",
       })
@@ -40,8 +46,12 @@ export const createOrder = async (
 };
 
 export const getOrderWithDetails = async (orderId: number) => {
+  const currentUserId = await getCurrentUserId();
+  if (!currentUserId) {
+    throw new Error("You must be logged in to access an order.");
+  }
   const order = await db.query.orders.findFirst({
-    where: eq(orders.id, orderId),
+    where: and(eq(orders.id, orderId), eq(orders.userId, currentUserId)),
     with: {
       lineItems: true,
       payments: true,
@@ -56,6 +66,10 @@ export const getOrdersList = async ({
   pageSize = 20,
 }: GetOrdersOptions = {}) => {
   const offset = (page - 1) * pageSize;
+  const currentUserId = await getCurrentUserId();
+  if (!currentUserId) {
+    throw new Error("You must be logged in to access your orders.");
+  }
 
   const results = await db
     .select({
@@ -68,7 +82,7 @@ export const getOrdersList = async ({
       balanceDue: orders.balanceDue,
     })
     .from(orders)
-    // .where(eq(users.id, ))
+    .where(eq(orders.userId, currentUserId))
     .orderBy(desc(orders.dueDate))
     .limit(pageSize)
     .offset(offset);

@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { orders, lineItems, payments } from "@/db/schema";
 
 const CUSTOMER = "Upneet Singh";
+const USER_ID = 2;
 
 const daysFromNow = (days: number) => {
   const date = new Date();
@@ -17,6 +18,7 @@ async function seed() {
   const [order1] = await db
     .insert(orders)
     .values({
+      userId: USER_ID,
       customer: CUSTOMER,
       dueDate: daysFromNow(14),
       status: "pending",
@@ -42,6 +44,7 @@ async function seed() {
   const [order2] = await db
     .insert(orders)
     .values({
+      userId: USER_ID,
       customer: CUSTOMER,
       dueDate: daysFromNow(7),
       status: "partially_paid",
@@ -75,6 +78,7 @@ async function seed() {
   const [order3] = await db
     .insert(orders)
     .values({
+      userId: USER_ID,
       customer: CUSTOMER,
       dueDate: daysFromNow(-3),
       status: "paid",
@@ -102,6 +106,7 @@ async function seed() {
   const [order4] = await db
     .insert(orders)
     .values({
+      userId: USER_ID,
       customer: CUSTOMER,
       dueDate: daysFromNow(-10),
       status: "overdue",
@@ -127,6 +132,7 @@ async function seed() {
   const [order5] = await db
     .insert(orders)
     .values({
+      userId: USER_ID,
       customer: CUSTOMER,
       dueDate: daysFromNow(21),
       status: "pending",

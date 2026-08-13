@@ -1,3 +1,4 @@
+import { LogoutButton } from "@/components/logout-button";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -60,10 +61,15 @@ const Main = async ({ searchParams }: MainProps) => {
 
   return (
     <div className="p-10">
-      <h1 className="text-3xl text-center mb-20">Your orders</h1>
-      <Button>
-        <Link href={"/orders/create"}>Create New</Link>
-      </Button>
+      <div className="flex items-center mb-20 justify-between">
+        <div className="flex items-center gap-2">
+          <h1 className="text-3xl text-center">Your orders</h1>
+          <Button>
+            <Link href={"/orders/create"}>Create New</Link>
+          </Button>
+        </div>
+        <LogoutButton />
+      </div>
       <Table>
         <TableCaption>A list of your recent invoices.</TableCaption>
         <TableHeader>

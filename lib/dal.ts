@@ -30,3 +30,10 @@ export const getUser = cache(async () => {
 
   return data[0] ?? null;
 });
+
+export async function getCurrentUserId(): Promise<number | null> {
+  const sessionCookie = (await cookies()).get("session")?.value;
+  const payload = await decrypt(sessionCookie);
+  const userId = payload?.userId as number | undefined;
+  return userId ?? null;
+}
