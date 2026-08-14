@@ -5,6 +5,7 @@ import {
   TableBody,
   TableCaption,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -71,7 +72,11 @@ const Main = async ({ searchParams }: MainProps) => {
         <LogoutButton />
       </div>
       <Table>
-        <TableCaption>A list of your recent invoices.</TableCaption>
+        <TableCaption>
+          {orders.length > 0
+            ? "A list of your recent invoices."
+            : "Nothing to show here"}
+        </TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead>Customer</TableHead>

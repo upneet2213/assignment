@@ -30,7 +30,11 @@ export default async function OrderDetailPage({
       </div>
       <h2 className="text-2xl ">Line Items</h2>
       <Table>
-        <TableCaption>A list of your line items</TableCaption>
+        <TableCaption>
+          {order.lineItems.length > 0
+            ? "A list of your line items"
+            : "Nothing to show here"}
+        </TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead>Description</TableHead>
@@ -52,7 +56,11 @@ export default async function OrderDetailPage({
       </Table>
       <h2 className="text-2xl ">Payments</h2>
       <Table>
-        <TableCaption>A list of your payments made</TableCaption>
+        <TableCaption>
+          {order.payments.length > 0
+            ? "A list of your payments made"
+            : "Nothing to show here"}
+        </TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead>Amount</TableHead>

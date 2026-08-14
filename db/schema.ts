@@ -3,19 +3,11 @@ import {
   index,
   integer,
   numeric,
-  pgEnum,
   pgTable,
   serial,
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
-
-export const paymentStatusEnum = pgEnum("status", [
-  "pending",
-  "paid",
-  "partially_paid",
-  "overdue",
-]);
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -31,7 +23,6 @@ export const orders = pgTable(
     id: serial("id").primaryKey(),
     customer: text("customer").notNull(),
     dueDate: timestamp("due_date").notNull(),
-    status: paymentStatusEnum("status").notNull(),
     totalAmount: numeric("total_amount", { precision: 10, scale: 2 })
       .notNull()
       .default("0"),

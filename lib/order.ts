@@ -14,6 +14,14 @@ type GetOrdersOptions = {
   pageSize?: number;
 };
 
+type OrderStatusInput = {
+  totalAmount: string;
+  amountPaid: string;
+  dueDate: Date | string;
+};
+
+export type OrderStatus = "paid" | "partially_paid" | "pending" | "overdue";
+
 export const createOrder = async (
   customer: string,
   dueDate: Date,
@@ -30,7 +38,6 @@ export const createOrder = async (
         customer,
         userId: Number(currentUserId),
         dueDate,
-        status: "pending",
       })
       .returning({ id: orders.id });
 
@@ -57,8 +64,11 @@ export const getOrderWithDetails = async (orderId: number) => {
       payments: true,
     },
   });
+  if (order) {
+    return { ...order, status: deriveOrderStatus(order) };
+  }
 
-  return order ?? null;
+  return null;
 };
 
 export const getOrdersList = async ({
@@ -75,7 +85,6 @@ export const getOrdersList = async ({
     .select({
       id: orders.id,
       dueDate: orders.dueDate,
-      status: orders.status,
       customer: orders.customer,
       totalAmount: orders.totalAmount,
       amountPaid: orders.amountPaid,
@@ -87,12 +96,20 @@ export const getOrdersList = async ({
     .limit(pageSize)
     .offset(offset);
 
+  const updatedResults = results.map((result) => {
+    return {
+      ...result,
+      status: deriveOrderStatus(result),
+    };
+  });
+
   const [{ count }] = await db
     .select({ count: sql<number>`COUNT(*)` })
-    .from(orders);
+    .from(orders)
+    .where(eq(orders.userId, currentUserId));
 
   return {
-    orders: results,
+    orders: updatedResults,
     pagination: {
       page,
       pageSize,
@@ -100,4 +117,24 @@ export const getOrdersList = async ({
       totalPages: Math.ceil(count / pageSize),
     },
   };
+};
+
+export const deriveOrderStatus = (order: OrderStatusInput): OrderStatus => {
+  const totalAmount = Number(order.totalAmount);
+  const amountPaid = Number(order.amountPaid);
+  const isPastDue = new Date(order.dueDate) < new Date();
+
+  if (amountPaid >= totalAmount && totalAmount > 0) {
+    return "paid";
+  }
+
+  if (isPastDue) {
+    return "overdue";
+  }
+
+  if (amountPaid > 0) {
+    return "partially_paid";
+  }
+
+  return "pending";
 };

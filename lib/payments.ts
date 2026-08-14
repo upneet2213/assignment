@@ -9,6 +9,14 @@ export class OrderNotFoundError extends Error {
     this.name = "OrderNotFoundError";
   }
 }
+export class OverpaymentError extends Error {
+  constructor(orderId: number, attempted: string, balanceDue: string) {
+    super(
+      `Payment of ${attempted} exceeds balance due of ${balanceDue} for order ${orderId}`,
+    );
+    this.name = "OverpaymentError";
+  }
+}
 
 /**
  * Records a payment against an order, updating amountPaid/balanceDue/status
@@ -49,22 +57,13 @@ export const recordPayment = async (
     ).toFixed(2);
 
     if (Number(newBalanceDue) < 0) {
-      throw new Error("Cannot overpay");
+      throw new OverpaymentError(orderId, amount, order.balanceDue);
     }
-
-    const newStatus =
-      Number(newBalanceDue) <= 0
-        ? "paid"
-        : Number(newAmountPaid) > 0
-          ? "partially_paid"
-          : order.status;
-
     const [updatedOrder] = await tx
       .update(orders)
       .set({
         amountPaid: newAmountPaid,
         balanceDue: newBalanceDue,
-        status: newStatus,
       })
       .where(eq(orders.id, orderId))
       .returning();

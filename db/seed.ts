@@ -21,7 +21,6 @@ async function seed() {
       userId: USER_ID,
       customer: CUSTOMER,
       dueDate: daysFromNow(14),
-      status: "pending",
     })
     .returning({ id: orders.id });
 
@@ -47,7 +46,6 @@ async function seed() {
       userId: USER_ID,
       customer: CUSTOMER,
       dueDate: daysFromNow(7),
-      status: "partially_paid",
     })
     .returning({ id: orders.id });
 
@@ -81,7 +79,6 @@ async function seed() {
       userId: USER_ID,
       customer: CUSTOMER,
       dueDate: daysFromNow(-3),
-      status: "paid",
     })
     .returning({ id: orders.id });
 
@@ -109,7 +106,6 @@ async function seed() {
       userId: USER_ID,
       customer: CUSTOMER,
       dueDate: daysFromNow(-10),
-      status: "overdue",
     })
     .returning({ id: orders.id });
 
@@ -135,7 +131,6 @@ async function seed() {
       userId: USER_ID,
       customer: CUSTOMER,
       dueDate: daysFromNow(21),
-      status: "pending",
     })
     .returning({ id: orders.id });
 

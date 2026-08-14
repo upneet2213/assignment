@@ -3,6 +3,7 @@ import { CreateOrderSchema } from "@/lib/definitions";
 import { createOrder } from "@/lib/order";
 import { SubmissionResult } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod/v4";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 export const createOrderAction = async (
@@ -19,7 +20,6 @@ export const createOrderAction = async (
   const { customer, dueDate, lineItems } = submission.value;
   try {
     await createOrder(customer, dueDate, lineItems);
-    redirect("/");
   } catch (error) {
     console.error("Failed to create order:", error);
     return submission.reply({
@@ -28,4 +28,6 @@ export const createOrderAction = async (
       ],
     });
   }
+  revalidatePath("/");
+  redirect(`/`);
 };
