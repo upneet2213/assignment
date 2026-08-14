@@ -45,6 +45,7 @@ export const PaymentFormSchema = z.object({
     .regex(/^\d+(\.\d{1,2})?$/, "Enter a valid amount, e.g. 100.00")
     .refine((val) => Number(val) > 0, "Amount must be greater than 0"),
   note: z.string().trim().max(500).optional(),
+  date: z.coerce.date({ error: "Enter the date the payment was made" }),
 });
 
 export const LineItemSchema = z.object({

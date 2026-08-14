@@ -69,6 +69,7 @@ async function seed() {
       orderId: order2.id,
       amount: "400.00",
       note: "Deposit",
+      date: new Date(),
     },
   ]);
 
@@ -96,6 +97,7 @@ async function seed() {
       orderId: order3.id,
       amount: "750.00",
       note: "Paid in full via bank transfer",
+      date: new Date(),
     },
   ]);
 

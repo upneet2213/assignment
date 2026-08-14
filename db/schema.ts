@@ -69,7 +69,7 @@ export const payments = pgTable(
       .notNull()
       .references(() => orders.id),
     amount: numeric("amount", { precision: 10, scale: 2 }).notNull(),
-    date: timestamp("date").defaultNow().notNull(),
+    date: timestamp("date").notNull(),
     note: text("note"),
   },
   (table) => [index("payments_order_id_idx").on(table.orderId)],

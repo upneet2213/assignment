@@ -11,6 +11,8 @@ type PaymentFormProps = {
   orderId: number;
 };
 
+const todayIsoDate = () => new Date().toISOString().slice(0, 10);
+
 export function PaymentForm({ orderId }: PaymentFormProps) {
   const makePaymentForOrder = makePayment.bind(null, orderId);
   const [lastResult, formAction, isPending] = useActionState(
@@ -25,6 +27,9 @@ export function PaymentForm({ orderId }: PaymentFormProps) {
     },
     shouldValidate: "onBlur",
     shouldRevalidate: "onInput",
+    defaultValue: {
+      date: todayIsoDate(),
+    },
   });
 
   return (
@@ -47,6 +52,25 @@ export function PaymentForm({ orderId }: PaymentFormProps) {
             className="text-sm text-destructive mt-1"
           >
             {fields.amount.errors}
+          </p>
+        )}
+      </div>
+
+      <div>
+        <label
+          htmlFor={fields.date.id}
+          className="block text-sm font-medium mb-1"
+        >
+          Payment date
+        </label>
+        <Input
+          {...getInputProps(fields.date, { type: "date" })}
+          key={fields.date.key}
+          max={todayIsoDate()}
+        />
+        {fields.date.errors && (
+          <p id={fields.date.errorId} className="text-sm text-destructive mt-1">
+            {fields.date.errors}
           </p>
         )}
       </div>

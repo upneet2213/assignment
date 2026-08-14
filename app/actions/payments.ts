@@ -19,10 +19,10 @@ export async function makePayment(
     return submission.reply();
   }
 
-  const { amount, note } = submission.value;
+  const { amount, note, date } = submission.value;
 
   try {
-    await recordPayment(orderId, amount, note);
+    await recordPayment(orderId, amount, date, note);
   } catch (error) {
     if (error instanceof OrderNotFoundError) {
       return submission.reply({

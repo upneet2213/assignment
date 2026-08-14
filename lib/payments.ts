@@ -34,6 +34,7 @@ export class OverpaymentError extends Error {
 export const recordPayment = async (
   orderId: number,
   amount: string,
+  date: Date,
   note?: string,
 ) => {
   return await db.transaction(async (tx) => {
@@ -47,7 +48,12 @@ export const recordPayment = async (
       throw new OrderNotFoundError(orderId);
     }
 
-    await tx.insert(payments).values({ orderId, amount, note });
+    await tx.insert(payments).values({
+      orderId,
+      amount,
+      note,
+      date,
+    });
 
     const newAmountPaid = (Number(order.amountPaid) + Number(amount)).toFixed(
       2,
